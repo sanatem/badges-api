@@ -1,12 +1,14 @@
 # Badges-API documentation
 
 
-
 ## Overview
 
 The API is developed using:
-• The Ruby framework: Sinatra. 
+
+• The Ruby framework: Sinatra.
+
 • ORM: Active Record.
+
 • Database: SQLite (Dev) // PostgreSQL (Prod).
 
 ##Structure
@@ -48,10 +50,15 @@ Provides the tasks for the ORM interaction, the DB creations, migrations.
 ###Setup
 
 Install the Gemfile and dependencies:
+
 • bundle install.
 
 In order to run the API:
+
 • bundle exec rackup.
+
 Run the tests:
+
 • bundle exec rake.
+
 • Run single test: bundle exec rake test/<test_unit_name.rb>
