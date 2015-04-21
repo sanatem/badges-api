@@ -8,7 +8,7 @@ Dir['./models/**/*.rb'].each {|f| require f }
 class Application < Sinatra::Base
   
 #Configurations	
-  register Sinatra::ActiveRecordExtension
+  #register Sinatra::ActiveRecordExtension
 
   configure :production, :development do
     enable :logging
