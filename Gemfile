@@ -5,7 +5,7 @@ gem 'sinatra-activerecord'
 gem 'rake'
 
 group :development do
-  gem 'sqlite3'
+  #gem 'sqlite3'
   gem 'sinatra-contrib'
 
 end
@@ -16,5 +16,5 @@ group :test do
 end
 
 group :production do
-	gem 'pg'
+	#gem 'pg'
 end
