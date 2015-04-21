@@ -6,13 +6,7 @@ Bundler.require :default, ENV['RACK_ENV'].to_sym
 Dir['./models/**/*.rb'].each {|f| require f }
 
 class Application < Sinatra::Base
-  register Sinatra::ActiveRecordExtension
-
-  configure :production, :development do
-    enable :logging
-  end
-
-
+  
 #Configurations	
   register Sinatra::ActiveRecordExtension
 
@@ -25,7 +19,7 @@ class Application < Sinatra::Base
     register Sinatra::Reloader
   end
   #Database
-  set :database, YAML.load_file('config/database.yml')[ENV['RACK_ENV']]
+  #set :database, YAML.load_file('config/database.yml')[ENV['RACK_ENV']]
 
 
 #Methods & Helpers
