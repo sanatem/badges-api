@@ -6,15 +6,9 @@ Bundler.require :default, ENV['RACK_ENV'].to_sym
 Dir['./models/**/*.rb'].each {|f| require f }
 
 class Application < Sinatra::Base
-  register Sinatra::ActiveRecordExtension
-
-  configure :production, :development do
-    enable :logging
-  end
-
 
 #Configurations	
-  register Sinatra::ActiveRecordExtension
+  #register Sinatra::ActiveRecordExtension
 
   configure :production, :development do
     enable :logging
@@ -37,6 +31,22 @@ helpers do
         :reason => reason
       }.to_json
     end
+
+    def jwt_signature url,*body
+
+        payload=JWT.encode({ #Payload
+          key: "master",
+          method: "GET",
+          path: url,
+        },
+        "badgemaster", #Secret
+        "HS256", #Algoritmo
+        {typ: "JWT", alg:"HS256"} #Headers
+        )
+      
+      
+      
+    end
 end    
 
 #Setting the content type of the answers
@@ -51,12 +61,24 @@ end
     JSON.pretty_generate({'Welcome to:'=>'Badges Api'})
   end	
 
+  get '/prueba' do
+    
+    token=jwt_signature ("/systems")
+    # Use the class methods to get down to business quickly
+      
+    response = HTTParty.get('http://localhost:8080',headers:{"Authorization"=>"JWT token=\""+token+"\""})
+
+    "#{response.body}"
+  
+  end
+
+
   #BADGE CLASSES ENDPOINTS
 
   #List all Cientificos Ciudadanos Badge Classes. 
   get '/badges' do
     slug="90812gjd"
-    name="Joven Cientifico"
+    name="Joven Cientifico"    
     [{id_badge_class:slug,name:name},{id_badge_class:slug,name:"Cientifico Avanzado"}].to_json
 
   end
