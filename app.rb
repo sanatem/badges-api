@@ -1,4 +1,6 @@
 require 'bundler'
+require 'digest'
+require 'uri'
 
 ENV['RACK_ENV'] ||= 'development'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
@@ -24,6 +26,15 @@ class Application < Sinatra::Base
 
 #Methods & Helpers
 helpers do
+    #convierte un json a uri
+    def stringify mi_json
+      result = []
+      mi_json.each do | key, value |
+        result << "#{URI.encode(key.to_s)}=#{URI.encode(value.to_s, /(?!\.)\W/)}"
+      end
+      result.join('&')
+    end
+    
     def json_status(code, reason)
       status code
       {
@@ -32,7 +43,7 @@ helpers do
       }.to_json
     end
 
-    def jwt_signature url,*body
+    def jwt_get_signature url
 
         payload=JWT.encode({ #Payload
           key: "master",
@@ -43,9 +54,47 @@ helpers do
         "HS256", #Algoritmo
         {typ: "JWT", alg:"HS256"} #Headers
         )
-      
-      
-      
+
+    end
+
+    def jwt_post_signature url, body
+      body = stringify body
+      hash = Digest::SHA256.hexdigest body
+      payload=JWT.encode({ #Payload
+        key: "master",
+        method: "POST",
+        path: url,
+        body: {
+          alg: "sha256",
+          hash: hash
+        }
+      },
+      "badgemaster", #Secret
+      "HS256", #Algoritmo
+      {typ: "JWT", alg:"HS256"} #Headers
+      )
+
+    end
+
+    def signed_get_request url
+      token=jwt_get_signature url
+      HTTParty.get('http://localhost:8080'+url,
+        headers:{
+          "Authorization"=>"JWT token=\"#{token}\"",
+          'Content-Type'=> 'application/x-www-form-urlencoded'
+          }
+      )
+    end
+
+    def signed_post_request url, body
+      token = jwt_post_signature url, body
+      HTTParty.post('http://localhost:8080'+url,
+        {headers:{
+          "Authorization"=>"JWT token=\"#{token}\"",
+          'Content-Type'=> 'application/x-www-form-urlencoded'
+          },
+        body: body}
+      )
     end
 end    
 
@@ -56,20 +105,29 @@ end
 
 
 #Endpoints
-	
+  
   get '/' do
     JSON.pretty_generate({'Welcome to:'=>'Badges Api'})
-  end	
+  end 
 
   get '/prueba' do
     
-    token=jwt_signature ("/systems")
-    # Use the class methods to get down to business quickly
-      
-    response = HTTParty.get('http://localhost:8080',headers:{"Authorization"=>"JWT token=\""+token+"\""})
+    #response = signed_post_request '/badges'
 
-    "#{response.body}"
-  
+    
+    description = 'asi me la gane'
+    body = {
+        name:"Post badge",
+        imageUrl:'https://www.dropbox.com/s/nvukekjbuql19jd/badge1.png?dl=1',
+        unique: true,
+        criteriaUrl: 'info.unlp.edu.ar',
+        earnerDescription: description,
+        consumerDescription: description,
+        type: 'Badge'
+      }
+    
+    response = signed_post_request "/systems/badgekit/badges", body
+    JSON.pretty_generate response
   end
 
 
@@ -101,6 +159,19 @@ end
           name: "Stephen Hawking"
       }
     ].to_json
+  end
+
+  #Create Badge Class
+  post '/badges' do
+=begin
+name: Name of the badge. Maximum 255 characters.
+image OR imageUrl: Image for the program. Should be either multipart data or a URL.
+criteriaUrl: Link to badge criteria webpage.
+description: Description of the badge.
+=end
+    status 201
+    {id_badge_class:"2gd1d2w3g"}.to_json
+  
   end
 
   #BADGE INSTANCES ENDPOINTS

@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'sinatra'
-gem 'sinatra-activerecord'
+#gem 'sinatra-activerecord'
 gem 'rake'
 gem 'jwt'
 gem 'httparty'
