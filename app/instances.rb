@@ -2,34 +2,44 @@ class Application < Sinatra::Base
   
   #Create Badge Instance
   post '/badges/:id_badge_class/instances' do
-     status 201
-    {issuedOn:"2015-04-21"}.to_json
+    
+    body={
+      email: params["email"]
+    }
+    status 201
+    response = signed_post_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances", body
+    
+    fecha={issuedOn:response['instance']['issuedOn']}
+
+    JSON.pretty_generate fecha
   end
 
 
   #Create <Application> Badge (achievement) Instance
   post '/issuers/:id_app/badges/:id_badge_class/instances' do
+    body={
+      email: params["email"]
+    }
     status 201
-    {issuedOn:"2015-04-17"}.to_json
+    response = signed_post_request @@API_ROOT+"/issuers/#{params[:id_app]}/badges/#{params[:id_badge_class]}/instances", body
+    
+    fecha={issuedOn:response['instance']['issuedOn']}
+
+    JSON.pretty_generate fecha
 
   end
 
   #List all Cientificos Ciudadanos Badge Instances for <email>
   get '/instances/:email' do
-    JSON.pretty_generate({params[:email] => [
-      {
-          id_badge_class: "h1k2bfhg",
-          name: "Joven Cientifico"
-      },
-      {
-          id_badge_class: "2gd1d2w3g",
-          name: "Cientifico Avanzado"
-      },
-      {
-          id_badge_class: "2134gdsa8",
-          name: "Arquimedes"
-      }
-    ]})
+    
+    response = signed_get_request @@API_ROOT+"/instances/#{params[:email]}"    
+
+    instances=[]
+    response['instances'].map { |instance| {id_badge_class:instance["slug"],name:instance["badge"]["slug"]} }
+    #JSON.pretty_generate({params[:email] => instances})
+    
+    JSON.pretty_generate response
+    
   end
 
   #List all <Application> Badge Instances (Achievements) for <email>
