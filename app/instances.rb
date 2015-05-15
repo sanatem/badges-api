@@ -53,15 +53,20 @@ class Application < Sinatra::Base
   
   #Retrieve specific badge instance for <email> and <Badge Class> 
   get '/badges/:id_badge_class/instances/:email' do
-    
-    {issuedOn: "2009-09-25"}.to_json
-
+    response = signed_get_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances/#{params[:email]}"
+    fecha = {
+      issuedOn: if response['instance'].nil? then false else response['instance']['issuedOn'] end
+    }
+    JSON.pretty_generate fecha
   end
 
   #Retrieve specific badge instance for <email>, <Application> and <Badge Class> (Achievement)
   get '/issuers/:id_app/badges/:id_badge_class/instances/:email' do
-
-    params[:email]=="error" ? ({ issuedOn: nil }.to_json) : ({issuedOn: "2015-03-05"}.to_json)   
+    response = signed_get_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances/#{params[:email]}"
+    fecha = {
+      issuedOn: if response['instance'].nil? then false else response['instance']['issuedOn'] end
+    }
+    JSON.pretty_generate fecha
   
   end  
 end
