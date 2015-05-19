@@ -24,7 +24,7 @@ class Application < Sinatra::Base
   set :database, YAML.load_file('config/database.yml')[ENV['RACK_ENV']]
 
 
-  @@API_ROOT = "/systems/badgekit"
+  @@API_ROOT = "/systems/cientificos_ciudadanos"
 
 
 #Methods & Helpers
@@ -116,7 +116,7 @@ end
   content_type :html
  end 
   get '/prueba' do
-    erb :prueba
+    File.read('views/prueba.html')
   end
 
 #Error example 404.

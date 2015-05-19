@@ -9,9 +9,9 @@ class Application < Sinatra::Base
     status 201
     response = signed_post_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances", body
     
-    fecha={issuedOn:response['instance']['issuedOn']}
+    fecha={issuedOn:if response['instance'].nil? then nil else response['instance']['issuedOn'] end}
 
-    JSON.pretty_generate fecha
+    JSON.pretty_generate fecha  
   end
 
 
@@ -23,49 +23,66 @@ class Application < Sinatra::Base
     status 201
     response = signed_post_request @@API_ROOT+"/issuers/#{params[:id_app]}/badges/#{params[:id_badge_class]}/instances", body
     
-    fecha={issuedOn:response['instance']['issuedOn']}
+    fecha={issuedOn:if response['instance'].nil? then nil else response['instance']['issuedOn'] end}
 
     JSON.pretty_generate fecha
 
   end
 
+  # #ESTAS SON DE PRUEBA
+  # get '/mail' do
+  #   res = signed_get_request @@API_ROOT+"/instances/santiagopravisani@hotmail.com"
+  #   JSON.pretty_generate res
+  # end
+
+  # get '/mail-galaxy' do
+  #   res = signed_get_request @@API_ROOT+"/issuers/galaxy_conqueror/instances/santiagopravisani@hotmail.com"
+  #   JSON.pretty_generate res
+  # end
+
+  # get '/mail-bf' do
+  #   res = signed_get_request @@API_ROOT+"/issuers/bfcrowd/instances/santiagopravisani@hotmail.com"
+  #   JSON.pretty_generate res
+  # end
+
   #List all Cientificos Ciudadanos Badge Instances for <email>
   get '/instances/:email' do
-    
+    #============================
+    # Problema con este endpoint: Es igual al de abajo.
+    #==================
     response = signed_get_request @@API_ROOT+"/instances/#{params[:email]}"    
 
     instances=[]
-    response['instances'].map { |instance| {id_badge_class:instance["slug"],name:instance["badge"]["slug"]} }
-    #JSON.pretty_generate({params[:email] => instances})
-    
-    JSON.pretty_generate response
-    
+    #arreglar para null
+    instances=response['instances'].select{|instance| instance["badge"]["issuer"].nil? }
+    .map { |instance| {id_badge_class:instance["slug"],name:instance["badge"]["name"]} }
+    JSON.pretty_generate({params[:email] => instances})
+  
   end
 
-  #List all <Application> Badge Instances (Achievements) for <email>
+  #List all <Appllication> Badge Instances (Achievements) for <email>
   get '/issuers/:id_app/instances/:email' do
 
-    JSON.pretty_generate({params[:email] => [
-      {
-          id_badge_class: "h1k2bfhg",
-          name: "Asesino de aliens"
-      },
-      {
-          id_badge_class: "2gd1d2w3g",
-          name: "Sherlock Holmes Espacial"
-      },
-      {
-          id_badge_class: "2134gdsa8",
-          name: "Stephen Hawking"
-      }
-    ]})
+    response = signed_get_request @@API_ROOT+"/issuers/#{params[:id_app]}/instances/#{params[:email]}"    
+
+    instances=[]
+    if ! response['instances'].nil?
+     instances=response['instances'].select{|instance| 
+      (! instance["badge"]["issuer"].nil?) and 
+      (instance["badge"]["issuer"]["slug"] == "#{params[:id_app]}") }
+       .map { |instance| 
+          {id_badge_class:instance["slug"],name:instance["badge"]["name"]} }
+    end
+
+    JSON.pretty_generate({params[:email] => instances})
+
   end
   
   #Retrieve specific badge instance for <email> and <Badge Class> 
   get '/badges/:id_badge_class/instances/:email' do
     response = signed_get_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances/#{params[:email]}"
     fecha = {
-      issuedOn: if response['instance'].nil? then false else response['instance']['issuedOn'] end
+      issuedOn: if response['instance'].nil? then nil else response['instance']['issuedOn'] end
     }
     JSON.pretty_generate fecha
   end
@@ -74,7 +91,7 @@ class Application < Sinatra::Base
   get '/issuers/:id_app/badges/:id_badge_class/instances/:email' do
     response = signed_get_request @@API_ROOT+"/badges/#{params[:id_badge_class]}/instances/#{params[:email]}"
     fecha = {
-      issuedOn: if response['instance'].nil? then false else response['instance']['issuedOn'] end
+      issuedOn: if response['instance'].nil? then nil else response['instance']['issuedOn'] end
     }
     JSON.pretty_generate fecha
   
