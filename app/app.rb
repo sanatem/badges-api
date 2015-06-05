@@ -99,6 +99,34 @@ helpers do
         body: body}
       )
     end
+
+    def crear_issuer issuer
+      body = {
+        slug: issuer['id_app'].downcase,
+        name: issuer['name'],
+        url: issuer['url']
+      }
+      response = signed_post_request @@API_ROOT+'/issuers', body
+      puts JSON.pretty_generate response    
+    end
+
+    def crear_achievement badge, id_app
+      description = badge["description"]
+      body = {
+          name:badge["name"],
+          imageUrl:badge["imageUrl"],
+          unique: true,
+          criteriaUrl: badge["criteriaUrl"],
+          earnerDescription: description,
+          consumerDescription: description ,
+          type: 'Badge'
+        }
+      status 201
+      
+      response = signed_post_request @@API_ROOT+"/issuers/#{id_app}/badges", body
+      puts JSON.pretty_generate response  
+    end    
+
 end    
 
 #Setting the content type of the answers
@@ -122,7 +150,49 @@ end
 #Error example 404.
   get '/error' do
     json_status 404,"Not found"
+  end
+
+  post '/carga-json' do
+    #Traer info del json enviado como parametro.
+    request.body.rewind #Vuelve a empezar.
+    
+    request_data = JSON.parse request.body.read #Content-type: JSON
+    
+    #Recorremos los issuers
+    request_data.each{ |issuer| 
+      #creamos /issuers
+      crear_issuer issuer
+      #recorremos badges
+      issuer["badges"].each{ |badge|
+        #creamos /issuers/:id_app/badges
+        crear_achievement badge,issuer["id_app"]
+      } 
+     }
+     
+     json_status 201,"Created"
+
   end  
+  
+
+  get '/prueba-carga' do
+   response = HTTParty.post("http://localhost:9292/carga-json", 
+    :body =>
+        [{
+        id_app:"bf_crowd",
+        name:"BFCrowd",
+        url:"http://example.com",
+        badges:[{
+                name:"Cat Lover3",
+                imageUrl:"http://example2.com/cat.png",
+                criteriaUrl:"http://example.com/catBadge.html",
+                description:"You love cats!"#Ojo con los "!!""
+                }]
+        }].to_json,
+    :headers => { 'Content-Type' => 'application/json' } )
+    
+    response.body   
+
+  end
 
 end
 
