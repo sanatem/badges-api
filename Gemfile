@@ -5,7 +5,7 @@ gem 'sinatra'
 gem 'rake'
 gem 'jwt'
 gem 'httparty'
-
+gem 'daemons'
 group :development do
   #gem 'sqlite3'
   gem 'sinatra-contrib'

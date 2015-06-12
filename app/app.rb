@@ -21,7 +21,7 @@ class Application < Sinatra::Base
     register Sinatra::Reloader
   end
   #Database
-  set :database, YAML.load_file('config/database.yml')[ENV['RACK_ENV']]
+  #set :database, YAML.load_file('config/database.yml')[ENV['RACK_ENV']]
 
 
   @@API_ROOT = "/systems/cientificos_ciudadanos"
