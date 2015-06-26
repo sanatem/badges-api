@@ -81,7 +81,7 @@ helpers do
 
     def signed_get_request url
       token=jwt_get_signature url
-      HTTParty.get('http://localhost:5000'+url,
+      HTTParty.get('http://163.10.45:5000'+url,
         headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
           'Content-Type'=> 'application/x-www-form-urlencoded'
@@ -91,7 +91,7 @@ helpers do
 
     def signed_post_request url, body
       token = jwt_post_signature url, body
-      HTTParty.post('http://localhost:5000'+url,
+      HTTParty.post('http://163.10.45:5000'+url,
         {headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
           'Content-Type'=> 'application/x-www-form-urlencoded'
