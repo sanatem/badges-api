@@ -156,8 +156,7 @@ end
     #Traer info del json enviado como parametro.
     request.body.rewind #Vuelve a empezar.
     
-    request_data = JSON.parse request.body.read #Content-type: JSON
-=begin    
+    request_data = JSON.parse request.body.read #Content-type: JSON   
     #Recorremos los issuers
     request_data.each{ |issuer| 
       #creamos /issuers
@@ -168,10 +167,8 @@ end
         crear_achievement badge,issuer["id_app"]
       } 
      }
-     
-     json_status 201,"Created"
-=end
-	request_data
+     request_data.to_json
+
   end  
   
 
