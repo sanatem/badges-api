@@ -157,7 +157,7 @@ end
     request.body.rewind #Vuelve a empezar.
     
     request_data = JSON.parse request.body.read #Content-type: JSON
-    
+=begin    
     #Recorremos los issuers
     request_data.each{ |issuer| 
       #creamos /issuers
@@ -170,7 +170,8 @@ end
      }
      
      json_status 201,"Created"
-
+=end
+	request_data
   end  
   
 
