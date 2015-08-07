@@ -168,7 +168,7 @@ end
       } 
      }
      #request_data.to_json
-     {recibimos:ok}.to_json
+     {recibimos:"ok"}.to_json
   end  
   
 
