@@ -107,7 +107,7 @@ helpers do
         url: issuer['url']
       }
       response = signed_post_request @@API_ROOT+'/issuers', body
-      puts JSON.pretty_generate response    
+      JSON.pretty_generate response    
     end
 
     def crear_achievement badge, id_app
@@ -124,7 +124,7 @@ helpers do
       status 201
       
       response = signed_post_request @@API_ROOT+"/issuers/#{id_app}/badges", body
-      puts JSON.pretty_generate response  
+      JSON.pretty_generate response  
     end    
 
 end    
@@ -158,6 +158,8 @@ end
     
     request_data = JSON.parse request.body.read #Content-type: JSON   
     #Recorremos los issuers
+    crear_issuer request_data[0]
+=begin
     request_data.each{ |issuer| 
       #creamos /issuers
       crear_issuer issuer
@@ -167,13 +169,13 @@ end
         crear_achievement badge,issuer["id_app"]
       } 
      }
-     #request_data.to_json
-     {recibimos:"ok"}.to_json
+     request_data.to_json
+=end
   end  
   
 
   get '/prueba-carga' do
-   response = HTTParty.post("http://163.10.5.42:9292/carga-json", 
+   response = HTTParty.post("http://localhost:9292/carga-json", 
     :body =>
         [{
         id_app:"nueva_badge",
