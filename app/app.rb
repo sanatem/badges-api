@@ -167,8 +167,8 @@ end
         crear_achievement badge,issuer["id_app"]
       } 
      }
-     request_data.to_json
-
+     #request_data.to_json
+     {recibimos:ok}.to_json
   end  
   
 
@@ -176,14 +176,14 @@ end
    response = HTTParty.post("http://localhost:9292/carga-json", 
     :body =>
         [{
-        id_app:"bf_crowd",
-        name:"BFCrowd",
-        url:"http://example.com",
+        id_app:"nueva_badge",
+        name:"Nueva badge",
+        url:"http://example2.com",
         badges:[{
-                name:"Cat Lover3",
+                name:"BADGE DE PRUEBA",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
-                description:"You love cats!"#Ojo con los "!!""
+                description:"You love cats"#Ojo con los "!!""
                 }]
         }].to_json,
     :headers => { 'Content-Type' => 'application/json' } )
