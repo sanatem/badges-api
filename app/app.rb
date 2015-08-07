@@ -173,7 +173,7 @@ end
   
 
   get '/prueba-carga' do
-   response = HTTParty.post("http://localhost:9292/carga-json", 
+   response = HTTParty.post("http://163.10.5.42:9292/carga-json", 
     :body =>
         [{
         id_app:"nueva_badge",
