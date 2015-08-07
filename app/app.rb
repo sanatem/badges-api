@@ -29,13 +29,16 @@ class Application < Sinatra::Base
 
 #Methods & Helpers
 helpers do
-    #convierte un json a uri
-    def stringify mi_json
+    #convierte un hash a uri
+    def stringify mi_hash
+      p mi_hash.to_s
       result = []
-      mi_json.each do | key, value |
-        result << "#{URI.encode(key.to_s)}=#{URI.encode(value.to_s, /(?!\.)\W/)}"
+      mi_hash.each do | key, value |
+        result << "#{URI.escape(key.to_s)}=#{URI.escape(value.to_s, /\W/)}"
       end
-      result.join('&')
+      result=result.join('&')
+      puts result
+      result
     end
     
     def json_status(code, reason)
@@ -62,7 +65,9 @@ helpers do
 
     def jwt_post_signature url, body
       body = stringify body
-      hash = Digest::SHA256.hexdigest body
+      sha256 = Digest::SHA256.new
+      hash = sha256.hexdigest body
+      puts hash
       payload=JWT.encode({ #Payload
         key: "master",
         method: "POST",
@@ -158,8 +163,9 @@ end
     
     request_data = JSON.parse request.body.read #Content-type: JSON   
     #Recorremos los issuers
-    crear_issuer request_data[0]
-=begin
+    #crear_issuer request_data[0] #PRUEBA
+    #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+
     request_data.each{ |issuer| 
       #creamos /issuers
       crear_issuer issuer
@@ -170,7 +176,7 @@ end
       } 
      }
      request_data.to_json
-=end
+
   end  
   
 
@@ -178,9 +184,9 @@ end
    response = HTTParty.post("http://localhost:9292/carga-json", 
     :body =>
         [{
-        id_app:"nueva_badge",
-        name:"Nueva badge",
-        url:"http://example2.com",
+        id_app:"galaxy_conqueror",
+        name:"Galaxy Conqueror",
+        url:"https://ciencia.lifia.info.unlp.edu.ar/galaxyconqueror",
         badges:[{
                 name:"BADGE DE PRUEBA",
                 imageUrl:"http://example2.com/cat.png",
