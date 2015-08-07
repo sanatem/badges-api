@@ -173,14 +173,14 @@ end
   
 
   get '/prueba-carga' do
-   response = HTTParty.post("http://localhost:9292/carga-json", 
+   response = HTTParty.post("http://163.10.5.42:9292/carga-json", 
     :body =>
         [{
         id_app:"bf_crowd",
         name:"BFCrowd",
         url:"http://example.com",
         badges:[{
-                name:"Cat Lover3",
+                name:"Cat Lover4",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
                 description:"You love cats!"#Ojo con los "!!""
