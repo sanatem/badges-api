@@ -1,6 +1,6 @@
 require 'bundler'
 require 'digest'
-require 'uri'
+require 'open-uri'
 
 ENV['RACK_ENV'] ||= 'development'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
@@ -29,18 +29,18 @@ class Application < Sinatra::Base
 
 #Methods & Helpers
 helpers do
-    #convierte un hash a uri
+    #convierte un ruby-hash a formato uri
     def stringify mi_hash
-      p mi_hash.to_s
       result = []
       mi_hash.each do | key, value |
-        result << "#{URI.escape(key.to_s)}=#{URI.escape(value.to_s, /\W/)}"
+        result << "#{URI::encode(key.to_s)}=#{URI::encode(value.to_s)}"
       end
       result=result.join('&')
       puts result
       result
     end
     
+    #Metodo que devuelve status http.
     def json_status(code, reason)
       status code
       {
@@ -49,6 +49,7 @@ helpers do
       }.to_json
     end
 
+    #Firma requerimientos HTTP GET con JWT
     def jwt_get_signature url
 
         payload=JWT.encode({ #Payload
@@ -63,18 +64,19 @@ helpers do
 
     end
 
+    #Firma requerimientos HTTP POST con JWT.
     def jwt_post_signature url, body
-      body = stringify body
+      #body = stringify body
       sha256 = Digest::SHA256.new
       hash = sha256.hexdigest body
-      puts hash
-      payload=JWT.encode({ #Payload
+	    puts "Hash generado con JWT:"+hash      
+	    payload=JWT.encode({ #Payload
         key: "master",
         method: "POST",
         path: url,
         body: {
           alg: "sha256",
-          hash: hash
+          hash: hash #adas456
         }
       },
       "badgemaster", #Secret
@@ -84,37 +86,42 @@ helpers do
 
     end
 
+    #Firma requerimientos HTTP GET y lo envia a la api Mozilla.
     def signed_get_request url
       token=jwt_get_signature url
       HTTParty.get('http://localhost:5000'+url,
         headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
-          'Content-Type'=> 'application/x-www-form-urlencoded'
+          'Content-Type'=> 'application/json'
           }
       )
     end
 
+    #Firma requerimientos HTTP POST y lo envia a la api Mozilla.
     def signed_post_request url, body
-      token = jwt_post_signature url, body
+      body_json= body.to_json
+      token = jwt_post_signature url, body_json
       HTTParty.post('http://localhost:5000'+url,
         {headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
-          'Content-Type'=> 'application/x-www-form-urlencoded'
+          'Content-Type'=> 'application/json'
           },
-        body: body}
+        body: body_json}
       )
     end
 
+    #Crea un issuer en la API Mozilla.
     def crear_issuer issuer
       body = {
         slug: issuer['id_app'].downcase,
         name: issuer['name'],
-        url: issuer['url']
+        url: issuer['url'] #cientificos-sarasa
       }
       response = signed_post_request @@API_ROOT+'/issuers', body
       JSON.pretty_generate response    
     end
 
+    #Crea una badge (achievement) en la API Mozilla.
     def crear_achievement badge, id_app
       description = badge["description"]
       body = {
@@ -157,6 +164,12 @@ end
     json_status 404,"Not found"
   end
 
+
+before '/prueba-carga' do
+content_type :html
+end
+
+  #Crea un issuer  y sus badges asociadas en la API Mozilla.
   post '/carga-json' do
     #Traer info del json enviado como parametro.
     request.body.rewind #Vuelve a empezar.
@@ -164,8 +177,8 @@ end
     request_data = JSON.parse request.body.read #Content-type: JSON   
     #Recorremos los issuers
     #crear_issuer request_data[0] #PRUEBA
-    #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
-
+    crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+=begin
     request_data.each{ |issuer| 
       #creamos /issuers
       crear_issuer issuer
@@ -176,17 +189,17 @@ end
       } 
      }
      request_data.to_json
-
+=end
   end  
   
-
+  #Metodo de testeo de carga JSON.
   get '/prueba-carga' do
    response = HTTParty.post("http://localhost:9292/carga-json", 
     :body =>
         [{
-        id_app:"galaxy_conqueror",
+        id_app:"prueba-andando",
         name:"Galaxy Conqueror",
-        url:"https://ciencia.lifia.info.unlp.edu.ar/galaxyconqueror",
+        url:"https://ciencia.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
                 name:"BADGE DE PRUEBA",
                 imageUrl:"http://example2.com/cat.png",
