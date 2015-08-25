@@ -36,7 +36,6 @@ helpers do
         result << "#{URI::encode(key.to_s)}=#{URI::encode(value.to_s)}"
       end
       result=result.join('&')
-      puts result
       result
     end
     
@@ -68,8 +67,7 @@ helpers do
     def jwt_post_signature url, body
       #body = stringify body
       sha256 = Digest::SHA256.new
-      hash = sha256.hexdigest body
-	    puts "Hash generado con JWT:"+hash      
+      hash = sha256.hexdigest body     
 	    payload=JWT.encode({ #Payload
         key: "master",
         method: "POST",
@@ -165,20 +163,17 @@ end
   end
 
 
-before '/prueba-carga' do
-content_type :html
-end
-
   #Crea un issuer  y sus badges asociadas en la API Mozilla.
   post '/carga-json' do
     #Traer info del json enviado como parametro.
     request.body.rewind #Vuelve a empezar.
     
     request_data = JSON.parse request.body.read #Content-type: JSON   
-    #Recorremos los issuers
     #crear_issuer request_data[0] #PRUEBA
-    crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
-=begin
+    #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+
+    #Recorremos los issuers
+
     request_data.each{ |issuer| 
       #creamos /issuers
       crear_issuer issuer
@@ -189,7 +184,6 @@ end
       } 
      }
      request_data.to_json
-=end
   end  
   
   #Metodo de testeo de carga JSON.
@@ -197,11 +191,11 @@ end
    response = HTTParty.post("http://localhost:9292/carga-json", 
     :body =>
         [{
-        id_app:"prueba-andando",
+        id_app:"prueba-andando4",
         name:"Galaxy Conqueror",
         url:"https://ciencia.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
-                name:"BADGE DE PRUEBA",
+                name:"BADGE DE PRUEBA4",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
                 description:"You love cats"#Ojo con los "!!""
