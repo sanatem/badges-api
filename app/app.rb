@@ -144,7 +144,7 @@ end
 
 #Setting the content type of the answers
 before do
-  content_type :json
+  content_type :html
 end
 
 #Endpoints
@@ -174,26 +174,30 @@ end
     request_data = JSON.parse request.body.read #Content-type: JSON   
     #crear_issuer request_data[0] #PRUEBA
     #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
-
-    #Recorremos los issuers
-    @result = request_data.to_json
+    @result = {status:"201",reason:"Created",information:""}
+    #Recorremos los issuers 
+    badges_creadas=0
     request_data.each{ |issuer| 
       #creamos /issuers
       resp_issuer = crear_issuer issuer
       #recorremos badges
+      
       issuer["badges"].each{ |badge|
         #creamos /issuers/:id_app/badges
         resp_achievment = crear_achievement badge,issuer["id_app"]      
         
-        if resp_achievment["status"] != "created"
+        if resp_achievment["status"] == "created"
+          badges_creadas=badges_creadas+1
+        else  
           p resp_achievment
-          @result = json_status 500,"Something went wrong!"
+          @result[:status]="500"
+          @result[:reason]="Something went wrong!"
+          @result[:information]=resp_achievment["code"]+"."
         end
       } 
      }
-     
-     @result  
-     
+     @result[:information]=@result[:information]+"Badges creadas con éxito: "+"#{badges_creadas}"
+     @result.to_json
   end  
 
   #Metodo de testeo de carga JSON.
@@ -208,7 +212,7 @@ end
                 name:"Badge probando",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
-                description:"You love cats"#Ojo con los "!!""
+                description:"Tésting!!"#Ojo con los "!!""
                 }]
         }].to_json,
     :headers => { 'Content-Type' => 'application/json' } )
