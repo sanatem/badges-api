@@ -116,7 +116,9 @@ helpers do
         url: issuer['url'] #cientificos-sarasa
       }
       response = signed_post_request @@API_ROOT+'/issuers', body
-      JSON.pretty_generate response    
+      JSON.pretty_generate response
+      response
+         
     end
 
     #Crea una badge (achievement) en la API Mozilla.
@@ -134,7 +136,8 @@ helpers do
       status 201
       
       response = signed_post_request @@API_ROOT+"/issuers/#{id_app}/badges", body
-      JSON.pretty_generate response  
+      JSON.pretty_generate response
+      response  
     end    
 
 end    
@@ -173,19 +176,26 @@ end
     #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
 
     #Recorremos los issuers
-
+    @result = request_data.to_json
     request_data.each{ |issuer| 
       #creamos /issuers
-      crear_issuer issuer
+      resp_issuer = crear_issuer issuer
       #recorremos badges
       issuer["badges"].each{ |badge|
         #creamos /issuers/:id_app/badges
-        crear_achievement badge,issuer["id_app"]
+        resp_achievment = crear_achievement badge,issuer["id_app"]      
+        
+        if resp_achievment["status"] != "created"
+          p resp_achievment
+          @result = json_status 500,"Something went wrong!"
+        end
       } 
      }
-     request_data.to_json
+     
+     @result  
+     
   end  
-  
+
   #Metodo de testeo de carga JSON.
   get '/prueba-carga' do
    response = HTTParty.post("http://localhost:9292/carga-json", 
@@ -195,7 +205,7 @@ end
         name:"Galaxy Conqueror",
         url:"https://ciencia.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
-                name:"BADGE DE PRUEBA4",
+                name:"Badge probando",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
                 description:"You love cats"#Ojo con los "!!""
