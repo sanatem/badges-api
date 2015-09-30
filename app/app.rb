@@ -4,7 +4,8 @@ require 'open-uri'
 
 ENV['RACK_ENV'] ||= 'development'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
-
+Encoding.default_internal="utf-8"
+Encoding.default_external="utf-8"
 Dir['./models/**/*.rb'].each {|f| require f }
 
 class Application < Sinatra::Base
@@ -90,7 +91,7 @@ helpers do
       HTTParty.get('http://localhost:5000'+url,
         headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
-          'Content-Type'=> 'application/json'
+          "Content-Type"=> "application/json;charset=utf-8"
           }
       )
     end
@@ -102,10 +103,11 @@ helpers do
       HTTParty.post('http://localhost:5000'+url,
         {headers:{
           "Authorization"=>"JWT token=\"#{token}\"",
-          'Content-Type'=> 'application/json'
+          "Content-Type"=> "application/json;charset=utf-8",
           },
         body: body_json}
       )
+
     end
 
     #Crea un issuer en la API Mozilla.
@@ -116,14 +118,13 @@ helpers do
         url: issuer['url'] #cientificos-sarasa
       }
       response = signed_post_request @@API_ROOT+'/issuers', body
-      JSON.pretty_generate response
-      response
          
     end
 
     #Crea una badge (achievement) en la API Mozilla.
     def crear_achievement badge, id_app
-      description = badge["description"]
+      description = badge["description"].encode("UTF-8")
+      p description
       body = {
           name:badge["name"],
           imageUrl:badge["imageUrl"],
@@ -136,8 +137,7 @@ helpers do
       status 201
       
       response = signed_post_request @@API_ROOT+"/issuers/#{id_app}/badges", body
-      JSON.pretty_generate response
-      response  
+
     end    
 
 end    
@@ -173,7 +173,10 @@ end
     
     request_data = JSON.parse request.body.read #Content-type: JSON   
     #crear_issuer request_data[0] #PRUEBA
-    #crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+    response = crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+
+    response.to_json
+=begin  
     @result = {status:"201",reason:"Created",information:""}
     #Recorremos los issuers 
     badges_creadas=0
@@ -198,26 +201,27 @@ end
      }
      @result[:information]=@result[:information]+"Badges creadas con éxito: "+"#{badges_creadas}"
      @result.to_json
+=end  
   end  
 
   #Metodo de testeo de carga JSON.
   get '/prueba-carga' do
    response = HTTParty.post("http://localhost:9292/carga-json", 
-    :body =>
+    :body =>JSON.generate(
         [{
         id_app:"prueba-andando4",
         name:"Galaxy Conqueror",
-        url:"https://ciencia.lifia.info.unlp.edu.ar/galaxy-conqueror",
+        url:"https://cientopolis.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
-                name:"Badge probando",
+                name:"Badge 5",
                 imageUrl:"http://example2.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
-                description:"Tésting!!"#Ojo con los "!!""
+                description:"T\&eacute;sting!!"#Ojo con los "!!""
                 }]
-        }].to_json,
-    :headers => { 'Content-Type' => 'application/json' } )
+        }]),
+    :headers => { 'Content-Type' => "application/json;charset=utf-8" } )
     
-    response.body   
+    response.body
 
   end
 
