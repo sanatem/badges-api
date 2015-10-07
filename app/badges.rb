@@ -7,7 +7,13 @@ class Application < Sinatra::Base
     if ! response["badges"].nil?
       response["badges"].each do
         |each|
-        badges << {id_badge_class:each["slug"], name:each["name"]} 
+        badges << {
+                   id_badge_class:each["slug"], 
+                   name:each["name"],
+                   imageUrl: each["imageUrl"],
+                   description: each["earnerDescription"],
+                   criteriaUrl: each["criteriaUrl"],
+                   criteria: each["criteria"]} 
       end 
     end
     JSON.pretty_generate badges
