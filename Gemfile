@@ -6,6 +6,7 @@ gem 'rake'
 gem 'jwt'
 gem 'httparty'
 gem 'daemons'
+gem 'json-schema'
 group :development do
   #gem 'sqlite3'
   gem 'sinatra-contrib'

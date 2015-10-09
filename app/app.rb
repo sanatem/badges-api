@@ -4,7 +4,8 @@ require 'open-uri'
 
 ENV['RACK_ENV'] ||= 'development'
 Bundler.require :default, ENV['RACK_ENV'].to_sym
-
+Encoding.default_internal="utf-8"
+Encoding.default_external="utf-8"
 Dir['./models/**/*.rb'].each {|f| require f }
 
 class Application < Sinatra::Base
@@ -138,9 +139,23 @@ helpers do
       
       response = signed_post_request @@API_ROOT+"/issuers/#{id_app}/badges", body
 
-    end    
+    end 
 
-end    
+    #Errores
+    def get_error error 
+      case error
+      when "NotAuthorized"
+        error = "Error de encoding (Tildes o caracteres especiales)"
+      end
+      error
+    end 
+
+    #Valida el archivo JSON y devuelve un array de errores
+    def validate_json data
+      JSON::Validator.fully_validate("schema.json", data)
+    end  
+
+end #End de helpers   
 
 #Setting the content type of the answers
 before do
@@ -168,15 +183,15 @@ end
   post '/carga-json' do
     #Traer info del json enviado como parametro.
     request.body.rewind #Vuelve a empezar.
-    
-    request_data = JSON.parse request.body.read #Content-type: JSON   
-    #response = crear_issuer request_data[0] #PRUEBA
-    
-    #response = crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+    request_data = JSON.parse request.body.read
+    errors = validate_json(request_data)
+    if errors !=[] #Hay errores
+      status 409
+      JSON.pretty_generate({status:409,reason:"JSON mal formado.",errors:errors})
+    else
+     #Convierte en Hash al JSON
 
-    #response.to_json
-
-    @result = {status:"201",reason:"Created",information:""}
+    @result = {status:"201",reason:"Created",information:"",badges:[]}
     #Recorremos los issuers 
     badges_creadas=0
     request_data.each{ |issuer| 
@@ -190,16 +205,18 @@ end
         
         if resp_achievment["status"] == "created"
           badges_creadas=badges_creadas+1
+          @result[:badges] << resp_achievment["badge"]["name"]
+          p resp_achievment
         else  
           @result[:status]="500"
-          @result[:reason]="Something went wrong!"
-          @result[:information]=resp_achievment["code"]+"."
+          @result[:reason]="No pudieron crearse todas las badges!.Error con badge:"+badge["name"]
+          @result[:information]=get_error(resp_achievment["code"])+"."
         end
       } 
      }
-     @result[:information]=@result[:information]+"Badges creadas con éxito: "+"#{badges_creadas}"
-     @result.to_json
-
+     @result[:information]=@result[:information]+"Badges creadas: "+"#{badges_creadas}"
+     JSON.pretty_generate(@result)
+   end
   end  
 
   #Metodo de testeo de carga JSON.
@@ -208,14 +225,13 @@ end
    data_hash = JSON.parse(json_file)
    response = HTTParty.post("http://localhost:9292/carga-json", 
 =begin
-  
     :body =>JSON.generate(
         [{
         id_app:"prueba-andando4",
         name:"Galaxy Conqueror",
         url:"https://cientopolis.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
-                name:"Badge con criteria 2",
+                name:"Emperador galáctico",
                 imageUrl:"http://example3.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
                 description:"T\&eacute;sting!!",
@@ -228,8 +244,7 @@ end
                           }]
                 }]
         }]),
-  
-=end    
+=end
     :body => JSON.generate(data_hash),
     :headers => { 'Content-Type' => "application/json;charset=utf-8" } )
     

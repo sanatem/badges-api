@@ -1,0 +1,37 @@
+{
+  "type":"array",
+  "items": {
+    "type":"object",
+    "properties": {
+      "id_app": {"type":"string"},
+      "name": {"type":"string"},
+      "url": {"type":"string"},
+      "badges":{"type":"array",
+        "items":{
+          "type":"object",
+          "properties":{
+            "name":{"type":"string"},
+            "imageUrl":{"type":"string"},
+            "criteriaUrl":{"type":"string"},
+            "description":{"type":"string"},
+            "criteria":{"type":"array",
+              "items":{
+                "type":"object",
+                "properties":{
+                  "id":{"type":"integer"},
+                  "description":{"type":"string"},
+                  "required":{"type":"boolean"},
+                  "note":{"type":"string"}
+                }
+              }
+            }
+          },
+          "required":["name","imageUrl","criteriaUrl","description"]   
+        }
+
+      }  
+    },
+    "required": ["id_app","name","url","badges"]
+  }
+         
+}
