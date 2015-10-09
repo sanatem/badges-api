@@ -1,6 +1,6 @@
 class Application < Sinatra::Base
-  
-  #Create Badge Instance
+
+    #Create Badge Instance
   post '/badges/:id_badge_class/instances' do
     
     body={
@@ -29,22 +29,6 @@ class Application < Sinatra::Base
 
   end
 
-  # #ESTAS SON DE PRUEBA
-  # get '/mail' do
-  #   res = signed_get_request @@API_ROOT+"/instances/santiagopravisani@hotmail.com"
-  #   JSON.pretty_generate res
-  # end
-
-  # get '/mail-galaxy' do
-  #   res = signed_get_request @@API_ROOT+"/issuers/galaxy_conqueror/instances/santiagopravisani@hotmail.com"
-  #   JSON.pretty_generate res
-  # end
-
-  # get '/mail-bf' do
-  #   res = signed_get_request @@API_ROOT+"/issuers/bfcrowd/instances/santiagopravisani@hotmail.com"
-  #   JSON.pretty_generate res
-  # end
-
   #List all Cientificos Ciudadanos Badge Instances for <email>
   get '/instances/:email' do
     #============================
@@ -56,8 +40,9 @@ class Application < Sinatra::Base
     #arreglar para null
     instances=response['instances'].select{|instance| instance["badge"]["issuer"].nil? }
     .map { |instance| {id_badge_class:instance["slug"],name:instance["badge"]["name"]} }
-    JSON.pretty_generate({params[:email] => instances})
-  
+    
+    #JSON.pretty_generate({params[:email] => instances})
+    JSON.pretty_generate response
   end
 
   #List all <Appllication> Badge Instances (Achievements) for <email>

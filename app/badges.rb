@@ -1,20 +1,25 @@
 class Application < Sinatra::Base
 
+  #Helpers 
+
+  def generate_response_badges badges
+      badges.map { |each|  
+        {  id_badge_class:each["slug"], 
+           name:each["name"],
+           imageUrl: each["imageUrl"],
+           description: each["earnerDescription"],
+           criteriaUrl: each["criteriaUrl"],
+           criteria: each["criteria"]} 
+       }
+  end  
+
+
   #List all Cientificos Ciudadanos Badge Classes. 
   get '/badges' do
     response = signed_get_request @@API_ROOT+"/badges"
     badges = []
     if ! response["badges"].nil?
-      response["badges"].each do
-        |each|
-        badges << {
-                   id_badge_class:each["slug"], 
-                   name:each["name"],
-                   imageUrl: each["imageUrl"],
-                   description: each["earnerDescription"],
-                   criteriaUrl: each["criteriaUrl"],
-                   criteria: each["criteria"]} 
-      end 
+      badges = generate_response_badges response["badges"]
     end
     JSON.pretty_generate badges
   end
@@ -25,9 +30,7 @@ class Application < Sinatra::Base
     response = signed_get_request @@API_ROOT+"/issuers/#{params[:id_app]}/badges"
     badges = []
     if ! response["badges"].nil?
-      response["badges"].each do |each| 
-        badges << {id_badge_class:each["slug"], name:each["name"]}
-      end     
+      badges = generate_response_badges response["badges"]
     end
   
     JSON.pretty_generate badges

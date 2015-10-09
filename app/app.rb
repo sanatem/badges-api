@@ -170,10 +170,11 @@ end
     request.body.rewind #Vuelve a empezar.
     
     request_data = JSON.parse request.body.read #Content-type: JSON   
-    #crear_issuer request_data[0] #PRUEBA
-    response = crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
+    #response = crear_issuer request_data[0] #PRUEBA
+    
+    #response = crear_achievement request_data[0]["badges"][0],request_data[0]["id_app"]
 
-    response.to_json
+    #response.to_json
 
     @result = {status:"201",reason:"Created",information:""}
     #Recorremos los issuers 
@@ -190,7 +191,6 @@ end
         if resp_achievment["status"] == "created"
           badges_creadas=badges_creadas+1
         else  
-          p resp_achievment
           @result[:status]="500"
           @result[:reason]="Something went wrong!"
           @result[:information]=resp_achievment["code"]+"."
@@ -199,24 +199,38 @@ end
      }
      @result[:information]=@result[:information]+"Badges creadas con éxito: "+"#{badges_creadas}"
      @result.to_json
- 
+
   end  
 
   #Metodo de testeo de carga JSON.
   get '/prueba-carga' do
+   json_file = File.read("carga.json")
+   data_hash = JSON.parse(json_file)
    response = HTTParty.post("http://localhost:9292/carga-json", 
+=begin
+  
     :body =>JSON.generate(
         [{
         id_app:"prueba-andando4",
         name:"Galaxy Conqueror",
         url:"https://cientopolis.lifia.info.unlp.edu.ar/galaxy-conqueror",
         badges:[{
-                name:"Badge sin criteria",
+                name:"Badge con criteria 2",
                 imageUrl:"http://example3.com/cat.png",
                 criteriaUrl:"http://example.com/catBadge.html",
                 description:"T\&eacute;sting!!",
+                criteria:[
+                          {
+                            id: 1, 
+                            description: "Criteria description.",
+                            required: true,
+                            note: "Note about criteria for assessor."
+                          }]
                 }]
         }]),
+  
+=end    
+    :body => JSON.generate(data_hash),
     :headers => { 'Content-Type' => "application/json;charset=utf-8" } )
     
     response.body
